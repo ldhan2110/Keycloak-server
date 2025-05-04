@@ -120,12 +120,15 @@
       </#if>
       <input type="submit" name="login" value="Login" />
     </form>
-  </div>
 
-  <#if realm.registrationAllowed>
-    <div style="margin-top: 16px; text-align: center;">
-      <a href="${url.registrationUrl}">Don't have an account? Register</a>
-    </div>
-  </#if>
+    <#if realm.registrationAllowed>
+      <div style="margin-top: 20px; text-align: center; width: 100%; font-size: 14px;">
+      Don't have an account? 
+        <a href="${url.registrationUrl}" style="color: #3b82f6; text-decoration: none;">
+          Register now
+        </a>
+      </div>
+    </#if>
+  </div>
 </body>
 </html>
