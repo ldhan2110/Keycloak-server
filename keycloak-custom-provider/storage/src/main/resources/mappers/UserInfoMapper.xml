@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kc.storage.mappers.UserInfoMapper">
+	<select id="findUserById" parameterType="java.lang.String" resultType="com.kc.storage.model.UserInfo">
+		SELECT
+		CO_ID,
+		USR_ID,
+		USR_NM,
+		USR_EML,
+		USR_PWD,
+		USE_YN_FLG
+		FROM ADM_USR
+		WHERE USR_ID = #{usrId}
+	</select>
+	<select id="findUserByUsername" parameterType="java.lang.String" resultType="com.kc.storage.model.UserInfo">
+		SELECT
+		CO_ID,
+		USR_ID,
+		USR_NM,
+		USR_EML,
+		USR_PWD,
+		USE_YN_FLG
+		FROM ADM_USR
+		WHERE USR_NM = #{username}
+	</select>
+	<select id="searchForUser" resultType="com.kc.storage.model.UserInfo"> 
+		SELECT 
+		CO_ID, 
+		USR_ID, 
+		USR_EML,
+		USE_YN_FLG
+		FROM ADM_USR WHERE 1=1 
+		<if test="search != null">
+			AND LOWER(USR_ID) LIKE LOWER(CONCAT('%', #{search}, '%'))
+		</if>
+		LIMIT #{maxResults} OFFSET #{firstResult} </select>
+</mapper>

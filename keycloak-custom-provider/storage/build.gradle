@@ -1,0 +1,53 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.5'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.kc'
+version = '0.0.1-SNAPSHOT'
+
+bootJar {
+    enabled = false // ❗ Disable Spring Boot's executable jar
+}
+
+jar {
+    archiveFileName = "custom_provider.jar"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compileOnly fileTree(dir: 'libs', include: '*.jar')
+	implementation 'org.mybatis:mybatis:3.5.19'
+	compileOnly 'org.keycloak:keycloak-core:26.2.2'
+	compileOnly 'org.keycloak:keycloak-server-spi:26.2.2'
+	compileOnly 'org.keycloak:keycloak-services:26.2.2'
+	compileOnly 'org.projectlombok:lombok'
+	implementation 'org.postgresql:postgresql'
+	annotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
