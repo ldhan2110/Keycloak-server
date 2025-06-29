@@ -67,18 +67,32 @@ public class CustomerStorageProvider implements UserStorageProvider, UserRegistr
 
 	@Override
 	public UserModel getUserById(RealmModel realm, String id) {
+		log.info("Validating user: " + id);
 		String username = StorageId.externalId(id);
-		UserInfo user = getUserById(username);
-		if (user != null) {
-			return new UserInfoAdapter(keycloakSession, realm, componentModel, user);
-		}
-		log.error(String.format("User with account [%s] doesn't found", username));
-		return null;
+		log.info("Validating user: " + username);
+		return getUserByUsername(realm, username);
 	}
 
 	@Override
 	public UserModel getUserByUsername(RealmModel realm, String username) {
-		return getUserById(realm, username);
+		String companyCode;
+        String actualUsername;
+
+        if (username.contains("::")) {
+            String[] parts = username.split("::", 2);
+            companyCode = parts[0];
+            actualUsername = parts[1];
+        } else {
+            log.warnf("Username '%s' does not contain companyCode — cannot proceed", username);
+            return null;
+        }
+
+        log.infof("Resolving user %s from company %s", actualUsername, companyCode);
+        UserInfo user = findUser(actualUsername, companyCode);
+
+        if (user == null) return null;
+
+        return new UserInfoAdapter(keycloakSession, realm, componentModel, user);
 	}
 
 	@Override
@@ -88,17 +102,17 @@ public class CustomerStorageProvider implements UserStorageProvider, UserRegistr
 
 	@Override
 	public UserModel addUser(RealmModel realm, String username) {
-		return null;
+		throw new UnsupportedOperationException("User registration not supported");
 	}
 
 	@Override
 	public boolean removeUser(RealmModel realm, UserModel user) {
-		return false;
+		throw new UnsupportedOperationException("User removal not supported");
 	}
 
 	@Override
 	public boolean supportsCredentialType(String credentialType) {
-		return PasswordCredentialModel.TYPE.endsWith(credentialType);
+		return PasswordCredentialModel.TYPE.equals(credentialType);
 	}
 
 	@Override
@@ -108,23 +122,30 @@ public class CustomerStorageProvider implements UserStorageProvider, UserRegistr
 
 	@Override
 	public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
-		if (!this.supportsCredentialType(credentialInput.getType())) {
+		if (!supportsCredentialType(credentialInput.getType())) {
 			return false;
 		}
-		String id = user.getUsername();
-		String pwd = credentialInput.getChallengeResponse();
-		UserInfo account = getUserById(id);
-		if (account == null)
+
+		String companyCode = null;
+		if (user instanceof UserInfoAdapter) {
+			companyCode = ((UserInfoAdapter) user).getCompanyCode();
+		}
+		
+		if (companyCode == null) {
+			log.error("CompanyCode not found for user during credential validation");
 			return false;
-		return pwd.equals(account.getUsrPwd());
+		}
+
+		log.info("Running isValid: "+ companyCode);
+		UserInfo userInfo = findUser(user.getUsername().split("::")[1], companyCode);
+		if (userInfo == null) {
+			return false;
+		}
+		return credentialInput.getChallengeResponse().equals(userInfo.getUsrPwd());
 	}
 
-	private UserInfo getUserById(String username) {
+	private UserInfo findUser(String username, String companyCode) {
 		UserInfoMapper mapper = sqlSession.getMapper(UserInfoMapper.class);
-		UserInfo user = mapper.findUserById(username);
-		if (user == null) {
-			throw new AuthenticationFlowException(AuthenticationFlowError.INVALID_CLIENT_CREDENTIALS);
-		}
-		return user;
+		return mapper.findUserByUsernameAndCompanyCode(username, companyCode);
 	}
 }

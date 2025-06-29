@@ -33,5 +33,18 @@
 		<if test="search != null">
 			AND LOWER(USR_ID) LIKE LOWER(CONCAT('%', #{search}, '%'))
 		</if>
-		LIMIT #{maxResults} OFFSET #{firstResult} </select>
+		LIMIT #{maxResults} OFFSET #{firstResult} 
+	</select>
+	<select id="findUserByUsernameAndCompanyCode" resultType="com.kc.storage.model.UserInfo">
+		SELECT
+		CO_ID,
+		USR_ID,
+		USR_NM,
+		USR_EML,
+		USR_PWD,
+		USE_YN_FLG
+		FROM ADM_USR
+		WHERE USR_ID = #{username}
+		AND LOWER(CO_ID) = LOWER(#{companyCode})
+	</select>
 </mapper>

@@ -2,6 +2,7 @@ package com.kc.storage.mappers;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
+import org.keycloak.models.UserModel;
 
 import com.kc.storage.model.UserInfo;
 
@@ -12,4 +13,6 @@ public interface UserInfoMapper {
 
 	List<UserInfo> searchForUser(@Param("search") String search, @Param("firstResult") Integer firstResult,
 			@Param("maxResults") Integer maxResults);
+
+	UserInfo findUserByUsernameAndCompanyCode(String username, String companyCode);
 }

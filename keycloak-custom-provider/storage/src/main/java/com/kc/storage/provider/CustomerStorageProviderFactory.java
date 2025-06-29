@@ -9,7 +9,7 @@ import com.kc.storage.utils.SessionFactory;
 
 public class CustomerStorageProviderFactory implements UserStorageProviderFactory<CustomerStorageProvider> {
 		
-	private static final String  STORAGE_ID = "custom_usr_storage";
+	public static final String  STORAGE_ID = "custom_usr_storage";
 	
 	@Override
 	public CustomerStorageProvider create(KeycloakSession session, ComponentModel model) {
